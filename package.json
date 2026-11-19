@@ -1,0 +1,12 @@
+{
+  "name": "esnaf-siparis",
+  "version": "1.0.0",
+  "description": "Mahalle esnafı için sıfır komisyonlu WhatsApp Mobil Sipariş Sistemi",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["esnaf", "whatsapp", "siparis", "menu", "pwa"],
+  "author": "",
+  "license": "MIT"
+}
