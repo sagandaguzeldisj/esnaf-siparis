@@ -1,10 +1,20 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const PORT = process.env.PORT || 5000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
+
+// Güvenli Oturum Havuzu (Memory-based Session Tokens)
+const activeSessions = new Set();
+
+function isAuthenticated(req) {
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim() || req.headers['x-admin-token'];
+  return token && activeSessions.has(token);
+}
 
 // Başlangıç Demo Verileri (Türk Esnafı için gerçekçi örnek)
 const DEFAULT_DATA = {
@@ -156,16 +166,69 @@ const server = http.createServer((req, res) => {
 
   // --- API ENDPOINTLERİ ---
 
-  // GET /api/data (Tüm menü ve dükkan bilgisi)
+  // GET /api/data (Halka Açık Menü - PIN ve Siparişler ASLA SIZDIRILMAZ)
   if (pathname === '/api/data' && req.method === 'GET') {
+    const data = loadData();
+    const safeStore = { ...data.store };
+    delete safeStore.pin; // Müşteriye PIN asla gitmez!
+    
+    const publicData = {
+      store: safeStore,
+      categories: data.categories || [],
+      products: data.products || [],
+      coupons: data.coupons || []
+    };
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(publicData));
+    return;
+  }
+
+  // GET /api/admin-data (Sadece PIN ile giriş yapmış Esnafa özel tam veri)
+  if (pathname === '/api/admin-data' && req.method === 'GET') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim. Lütfen giriş yapın.' }));
+      return;
+    }
     const data = loadData();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
     return;
   }
 
-  // POST /api/store (Dükkan bilgilerini güncelleme)
+  // POST /api/verify-pin (PIN doğrulama ve güvenli Token üretme)
+  if (pathname === '/api/verify-pin' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { pin } = JSON.parse(body);
+        const data = loadData();
+        const correctPin = String((data.store && data.store.pin) || '1234');
+        if (String(pin).trim() === correctPin) {
+          const token = crypto.randomBytes(24).toString('hex');
+          activeSessions.add(token);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, token }));
+        } else {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Hatalı PIN kodu' }));
+        }
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Geçersiz istek' }));
+      }
+    });
+    return;
+  }
+
+  // POST /api/store (Dükkan bilgilerini güncelleme - GÜVENLİK KORUMALI)
   if (pathname === '/api/store' && req.method === 'POST') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
+      return;
+    }
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
@@ -184,8 +247,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // POST /api/products (Yeni ürün ekleme veya güncelleme)
+  // POST /api/products (Ürün ekle/güncelle - GÜVENLİK KORUMALI)
   if (pathname === '/api/products' && req.method === 'POST') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
+      return;
+    }
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
@@ -193,7 +261,6 @@ const server = http.createServer((req, res) => {
         const item = JSON.parse(body);
         const data = loadData();
         if (item.id) {
-          // Güncelle
           const idx = data.products.findIndex(p => p.id === item.id);
           if (idx !== -1) {
             data.products[idx] = { ...data.products[idx], ...item };
@@ -201,7 +268,6 @@ const server = http.createServer((req, res) => {
             data.products.push(item);
           }
         } else {
-          // Yeni ekle
           item.id = Date.now().toString();
           data.products.push(item);
         }
@@ -216,8 +282,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // DELETE /api/products?id=... (Ürün silme)
+  // DELETE /api/products (Ürün silme - GÜVENLİK KORUMALI)
   if (pathname === '/api/products' && req.method === 'DELETE') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
+      return;
+    }
     const id = parsedUrl.searchParams.get('id');
     const data = loadData();
     data.products = data.products.filter(p => p.id !== id);
@@ -227,32 +298,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // POST /api/verify-pin (Esnaf panel giriş şifresi kontrolü)
-  if (pathname === '/api/verify-pin' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const { pin } = JSON.parse(body);
-        const data = loadData();
-        const correctPin = (data.store && data.store.pin) || '1234';
-        if (pin === correctPin) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true }));
-        } else {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Hatalı PIN' }));
-        }
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz istek' }));
-      }
-    });
-    return;
-  }
-
-  // POST /api/categories (Kategori ekle/güncelle)
+  // POST /api/categories (Kategori ekle - GÜVENLİK KORUMALI)
   if (pathname === '/api/categories' && req.method === 'POST') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
+      return;
+    }
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
@@ -273,8 +325,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // DELETE /api/categories?id=... (Kategori silme)
+  // DELETE /api/categories (Kategori silme - GÜVENLİK KORUMALI)
   if (pathname === '/api/categories' && req.method === 'DELETE') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
+      return;
+    }
     const id = parsedUrl.searchParams.get('id');
     const data = loadData();
     data.categories = (data.categories || []).filter(c => c.id !== id);
@@ -284,8 +341,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // GET /api/orders (Gelen siparişler listesi)
+  // GET /api/orders (Siparişler - GÜVENLİK KORUMALI, KVKK UYUMLU)
   if (pathname === '/api/orders' && req.method === 'GET') {
+    if (!isAuthenticated(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Yetkisiz erişim. Siparişleri sadece yetkili esnaf görebilir.' }));
+      return;
+    }
     const data = loadData();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data.orders || []));

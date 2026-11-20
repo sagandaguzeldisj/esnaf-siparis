@@ -21,6 +21,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+// --- 🔒 GÜVENLİK VE YETKİLENDİRME YARDIMCILARI ---
+function getAuthHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + (sessionStorage.getItem('esnaf_token') || '')
+  };
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[m]));
+}
+
 // --- 🔒 PIN KODU GÜVENLİK KONTROLÜ ---
 function setupPinAuth() {
   const pinModal = document.getElementById('pin-modal');
@@ -28,28 +42,25 @@ function setupPinAuth() {
   const pinBtn = document.getElementById('pin-submit-btn');
   const pinError = document.getElementById('pin-error');
 
-  // Oturumda zaten giriş yapılmış mı?
-  if (sessionStorage.getItem('esnaf_auth') === 'true') {
+  // Oturumda zaten token var mı?
+  if (sessionStorage.getItem('esnaf_token')) {
     pinModal.style.display = 'none';
     return;
   }
 
   async function checkPin() {
     const val = pinInput.value.trim();
-    if (val === '1234') {
-      sessionStorage.setItem('esnaf_auth', 'true');
-      pinModal.style.display = 'none';
-      return;
-    }
     try {
       const res = await fetch('/api/verify-pin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin: val })
       });
-      if (res.ok) {
-        sessionStorage.setItem('esnaf_auth', 'true');
+      const data = await res.json();
+      if (res.ok && data.token) {
+        sessionStorage.setItem('esnaf_token', data.token);
         pinModal.style.display = 'none';
+        await fetchAdminData();
       } else {
         pinError.style.display = 'block';
         pinInput.value = '';
@@ -67,7 +78,7 @@ function setupPinAuth() {
 
 // Sipariş Fişi Yazdırma (Mutfak & Kurye için)
 window.printOrderReceipt = function(orderId) {
-  fetch('/api/orders')
+  fetch('/api/orders', { headers: getAuthHeaders() })
     .then(r => r.json())
     .then(orders => {
       const order = orders.find(o => o.id === orderId) || orders[0];
@@ -75,7 +86,7 @@ window.printOrderReceipt = function(orderId) {
 
       const itemsHtml = (order.items || []).map(i => `
         <tr>
-          <td style="padding: 4px 0;">${i.quantity}x ${i.product.name}</td>
+          <td style="padding: 4px 0;">${escapeHtml(i.quantity)}x ${escapeHtml(i.product.name)}</td>
           <td style="text-align: right;">${i.product.price * i.quantity} TL</td>
         </tr>
       `).join('');
@@ -84,7 +95,7 @@ window.printOrderReceipt = function(orderId) {
       printWin.document.write(`
         <html>
           <head>
-            <title>Sipariş Fişi - #${order.id || ''}</title>
+            <title>Sipariş Fişi - #${escapeHtml(order.id || '')}</title>
             <style>
               body { font-family: monospace; padding: 15px; font-size: 13px; color: #000; }
               .center { text-align: center; }
@@ -94,15 +105,15 @@ window.printOrderReceipt = function(orderId) {
           </head>
           <body>
             <div class="center">
-              <h2 style="margin: 0;">${currentData.store.name || 'SİPARİŞ FİŞİ'}</h2>
+              <h2 style="margin: 0;">${escapeHtml(currentData.store.name || 'SİPARİŞ FİŞİ')}</h2>
               <p style="margin: 4px 0;">${new Date(order.createdAt || Date.now()).toLocaleString('tr-TR')}</p>
             </div>
             <hr>
-            <p><strong>Müşteri:</strong> ${order.customer ? order.customer.name : ''}</p>
-            <p><strong>Telefon:</strong> ${order.customer ? order.customer.phone : ''}</p>
-            <p><strong>Adres:</strong> ${order.customer ? order.customer.address : ''}</p>
-            ${order.customer && order.customer.note ? `<p><strong>Not:</strong> ${order.customer.note}</p>` : ''}
-            <p><strong>Ödeme:</strong> ${order.payment || ''}</p>
+            <p><strong>Müşteri:</strong> ${escapeHtml(order.customer ? order.customer.name : '')}</p>
+            <p><strong>Telefon:</strong> ${escapeHtml(order.customer ? order.customer.phone : '')}</p>
+            <p><strong>Adres:</strong> ${escapeHtml(order.customer ? order.customer.address : '')}</p>
+            ${order.customer && order.customer.note ? `<p><strong>Not:</strong> ${escapeHtml(order.customer.note)}</p>` : ''}
+            <p><strong>Ödeme:</strong> ${escapeHtml(order.payment || '')}</p>
             <hr>
             <table>${itemsHtml}</table>
             <hr>
@@ -160,9 +171,16 @@ function setupOrderPolling() {
 }
 
 async function pollOrders() {
+  if (!sessionStorage.getItem('esnaf_token')) return;
   try {
-    const res = await fetch('/api/orders');
-    if (!res.ok) return;
+    const res = await fetch('/api/orders', { headers: getAuthHeaders() });
+    if (!res.ok) {
+      if (res.status === 401) {
+        sessionStorage.removeItem('esnaf_token');
+        document.getElementById('pin-modal').style.display = 'flex';
+      }
+      return;
+    }
     const orders = await res.json();
 
     const countEl = document.getElementById('live-order-count');
@@ -206,19 +224,22 @@ function renderLiveOrders(orders) {
   if (noText) noText.style.display = 'none';
 
   container.innerHTML = orders.slice(0, 10).map(o => {
-    const itemsDesc = (o.items || []).map(i => `${i.quantity}x ${i.product.name}`).join(', ');
+    const itemsDesc = (o.items || []).map(i => `${escapeHtml(i.quantity)}x ${escapeHtml(i.product.name)}`).join(', ');
     const time = new Date(o.createdAt || Date.now()).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const custName = escapeHtml((o.customer && o.customer.name) || 'Müşteri');
+    const custAddr = escapeHtml((o.customer && o.customer.address) || '');
+    const payment = escapeHtml(o.payment || '');
 
     return `
       <div style="background: white; border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <div style="font-weight: 800; font-size: 14px;">${o.customer ? o.customer.name : 'Müşteri'} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">(${time})</span></div>
+          <div style="font-weight: 800; font-size: 14px;">${custName} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">(${time})</span></div>
           <div style="font-size: 12px; color: var(--text-muted);">${itemsDesc}</div>
-          <div style="font-size: 11px; color: #475569; margin-top: 2px;">📍 ${o.customer ? o.customer.address : ''} • 💳 ${o.payment || ''}</div>
+          <div style="font-size: 11px; color: #475569; margin-top: 2px;">📍 ${custAddr} • 💳 ${payment}</div>
         </div>
         <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-          <div style="font-size: 15px; font-weight: 800; color: var(--primary);">${o.total} TL</div>
-          <button onclick="printOrderReceipt('${o.id || ''}')" style="background: #f1f5f9; border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600;">🖨️ Fiş Yazdır</button>
+          <div style="font-size: 15px; font-weight: 800; color: var(--primary);">${escapeHtml(o.total)} TL</div>
+          <button onclick="printOrderReceipt('${escapeHtml(o.id || '')}')" style="background: #f1f5f9; border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600;">🖨️ Fiş Yazdır</button>
         </div>
       </div>
     `;
@@ -240,12 +261,16 @@ function showOrderNotification(text) {
 }
 
 async function fetchAdminData() {
+  if (!sessionStorage.getItem('esnaf_token')) return;
   try {
-    const res = await fetch('/api/data');
+    const res = await fetch('/api/admin-data', { headers: getAuthHeaders() });
     if (res.ok) {
       currentData = await res.json();
       populateStoreForm();
       renderProductTable();
+    } else if (res.status === 401) {
+      sessionStorage.removeItem('esnaf_token');
+      document.getElementById('pin-modal').style.display = 'flex';
     }
   } catch (err) {
     alert("Veriler yüklenirken hata oluştu.");
@@ -311,7 +336,7 @@ function setupCategoryEvents() {
     try {
       const res = await fetch('/api/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ id, name })
       });
       if (res.ok) {
@@ -327,7 +352,10 @@ function setupCategoryEvents() {
 window.deleteCategory = async function(id) {
   if (!confirm("Bu kategoriyi silmek istediğinize emin misiniz?")) return;
   try {
-    const res = await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/categories?id=${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
     if (res.ok) {
       await fetchAdminData();
     } else {
@@ -389,7 +417,7 @@ function setupAdminForms() {
     try {
       const res = await fetch('/api/store', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updatedStore)
       });
       if (res.ok) {
@@ -415,7 +443,7 @@ function setupAdminForms() {
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newProduct)
       });
       if (res.ok) {
@@ -438,7 +466,7 @@ window.toggleAvailability = async function(id) {
 
   await fetch('/api/products', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(prod)
   });
 
@@ -450,7 +478,8 @@ window.deleteProduct = async function(id) {
   if (!confirm("Bu ürünü menüden silmek istediğinize emin misiniz?")) return;
 
   await fetch(`/api/products?id=${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: getAuthHeaders()
   });
 
   await fetchAdminData();
