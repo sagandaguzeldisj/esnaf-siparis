@@ -1,446 +1,631 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-
-const PORT = process.env.PORT || 5000;
-const DATA_FILE = path.join(__dirname, 'data.json');
-const PUBLIC_DIR = path.join(__dirname, 'public');
-
-// Güvenli Oturum Havuzu (Memory-based Session Tokens)
-const activeSessions = new Set();
-
-function isAuthenticated(req) {
-  const authHeader = req.headers['authorization'] || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim() || req.headers['x-admin-token'];
-  return token && activeSessions.has(token);
+/* Modern Mobil-Öncelikli Tasarım - Esnaf WhatsApp Sipariş Menüsü */
+:root {
+  --primary: #10b981; /* WhatsApp / Taze Yeşil */
+  --primary-hover: #059669;
+  --primary-light: #ecfdf5;
+  --secondary: #1f2937;
+  --accent: #f59e0b;
+  --danger: #ef4444;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
 }
 
-// Başlangıç Demo Verileri (Türk Esnafı için gerçekçi örnek)
-const DEFAULT_DATA = {
-  store: {
-    name: "Meşhur Usta Pide & Kebap",
-    slogan: "1994'ten Beri Değişmeyen Lezzet",
-    phone: "905551234567", // WhatsApp sipariş hattı
-    minOrder: 150,
-    deliveryTime: "30-45 dk",
-    isOpen: true,
-    address: "Atatürk Cad. No:42/A, Kadıköy / İstanbul",
-    instagram: "@meshurustapide",
-    logo: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
-    pin: "1234"
-  },
-  coupons: [
-    { code: "ILK10", discountPercent: 10, minCart: 100 },
-    { code: "ESNAF15", discountPercent: 15, minCart: 200 }
-  ],
-  categories: [
-    { id: "pideler", name: "Pideler" },
-    { id: "kebaplar", name: "Kebap & Dürümler" },
-    { id: "lahmacun", name: "Lahmacun" },
-    { id: "icecekler", name: "İçecekler" },
-    { id: "tatlilar", name: "Tatlılar" }
-  ],
-  products: [
-    {
-      id: "1",
-      name: "Kuşbaşılı Kaşarlı Pide",
-      category: "pideler",
-      price: 240,
-      description: "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
-      image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "2",
-      name: "Kıymalı Yumurtalı Pide",
-      category: "pideler",
-      price: 210,
-      description: "Geleneksel kıymalı harç ve köy yumurtası ile enfes lezzet.",
-      image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "3",
-      name: "Çıtır Lahmacun",
-      category: "lahmacun",
-      price: 85,
-      description: "Taş fırında incecik açılmış çıtır hamur, zırh kıyması, domates ve maydanoz.",
-      image: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "4",
-      name: "Adana Dürüm",
-      category: "kebaplar",
-      price: 220,
-      description: "Zırhta çekilmiş acılı kuzu-dana kıyması, közlenmiş biber, sumaklı soğan ve lavaş.",
-      image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "5",
-      name: "Urfa Dürüm (Acısız)",
-      category: "kebaplar",
-      price: 220,
-      description: "Özel baharatlı zırh kıyması, lavaş, közlenmiş domates ve yeşillik.",
-      image: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "6",
-      name: "Fıstıklı Künefe",
-      category: "tatlilar",
-      price: 150,
-      description: "Hatay peynirli, bol şerbetli ve hakiki Antep fıstıklı sıcak künefe.",
-      image: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "7",
-      name: "Kutu Kola (330ml)",
-      category: "icecekler",
-      price: 45,
-      description: "Soğuk servis edilir.",
-      image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    },
-    {
-      id: "8",
-      name: "Büyük Boy Yayık Ayran (300ml)",
-      category: "icecekler",
-      price: 35,
-      description: "Bol köpüklü taze yayık ayranı.",
-      image: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
-      isAvailable: true
-    }
-  ],
-  orders: []
-};
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
 
-// Veritabanı başlat veya yükle
-function loadData() {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(DEFAULT_DATA, null, 2), 'utf8');
-    return DEFAULT_DATA;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  line-height: 1.5;
+  padding-bottom: 90px; /* Alttaki sepet barı için boşluk */
+}
+
+/* Konteyner - Mobilde tam genişlik, masaüstünde telefon boyutunda ortalanır */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--surface);
+  min-height: 100vh;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.07);
+  position: relative;
+}
+
+/* Üst Başlık & Kapak */
+.store-header {
+  position: relative;
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+  color: white;
+  padding: 24px 20px 20px;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.store-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.status-badge.open {
+  color: #a7f3d0;
+}
+
+.status-badge.closed {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.admin-link-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s;
+}
+
+.admin-link-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.store-info h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.store-info p {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.store-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  font-size: 12px;
+  opacity: 0.95;
+}
+
+.store-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Arama ve Kategori Filtresi */
+.search-bar-wrap {
+  padding: 16px 16px 8px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: #f1f5f9 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 16px;
+  scrollbar-width: none;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  user-select: none;
+  scroll-behavior: smooth;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-chip.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Ürün Listesi */
+.product-section {
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-main);
+}
+
+.product-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.product-card:active {
+  transform: scale(0.99);
+}
+
+.product-img {
+  width: 85px;
+  height: 85px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+
+.product-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 3px;
+}
+
+.product-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.product-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-price {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.add-btn {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.add-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.sold-out-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--danger);
+  background: #fee2e2;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* Altta Sabit Kalan Sepet Barı */
+.sticky-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px;
+  background: linear-gradient(to top, rgba(255, 255, 255, 1) 70%, rgba(255, 255, 255, 0));
+  z-index: 50;
+  pointer-events: none;
+}
+
+.cart-bar-btn {
+  pointer-events: auto;
+  max-width: 448px;
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.5);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.cart-bar-btn:hover {
+  background: var(--primary-hover);
+}
+
+.cart-bar-btn:active {
+  transform: scale(0.98);
+}
+
+.cart-count-badge {
+  background: rgba(255, 255, 255, 0.25);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+}
+
+/* Sepet Çekmecesi (Modal / Drawer) */
+.cart-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.cart-modal.open {
+  display: flex;
+}
+
+.cart-drawer {
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-title {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.close-btn {
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.drawer-content {
+  overflow-y: auto;
+  padding: 20px;
+  flex: 1;
+}
+
+.cart-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.cart-item-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cart-item-price {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+}
+
+.qty-btn {
+  border: none;
+  background: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Form Elemanları */
+.form-group {
+  margin-top: 14px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* WhatsApp Sipariş Tamamlama Butonu */
+.whatsapp-submit-btn {
+  background: #25d366; /* WhatsApp Orijinal Yeşili */
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -5px rgba(37, 211, 102, 0.5);
+  margin-top: 20px;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.whatsapp-submit-btn:hover {
+  background: #20ba5a;
+}
+
+.whatsapp-submit-btn:active {
+  transform: scale(0.98);
+}
+
+/* =========================================================
+   🖥️ MASAÜSTÜ & BİLGİSAYAR GÖRÜNÜMÜ (RESPONSIVE DESKTOP)
+   Mobildeki (< 768px) kusursuz tasarım aynen kalır.
+   Bilgisayarda ise tam ekran profesyonel web portalına dönüşür.
+   ========================================================= */
+@media (min-width: 768px) {
+  body {
+    background-color: #f1f5f9;
   }
-  try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return DEFAULT_DATA;
+
+  .app-container {
+    max-width: 1120px;
+    margin: 30px auto;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    min-height: calc(100vh - 60px);
+  }
+
+  .store-header {
+    padding: 36px 40px 28px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .store-info h1 {
+    font-size: 28px;
+  }
+
+  .store-info p {
+    font-size: 15px;
+  }
+
+  .store-meta {
+    font-size: 14px;
+    gap: 24px;
+    margin-top: 18px;
+  }
+
+  .search-bar-wrap {
+    padding: 24px 40px 12px;
+  }
+
+  .search-input {
+    font-size: 15px;
+    padding: 14px 18px 14px 44px;
+  }
+
+  .category-tabs {
+    padding: 14px 40px;
+  }
+
+  .category-chip {
+    padding: 10px 22px;
+    font-size: 14px;
+  }
+
+  .product-section {
+    padding: 24px 40px 40px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  /* Bilgisayarda ürünleri 2'li modern ızgara (grid) yap */
+  .product-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px;
+  }
+
+  .product-card {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    align-items: flex-start;
+    height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .product-img {
+    width: 95px;
+    height: 95px;
+  }
+
+  .product-name {
+    font-size: 16px;
+  }
+
+  .product-desc {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .cart-bar-btn {
+    max-width: 650px;
+    font-size: 16px;
+    padding: 16px 24px;
   }
 }
 
-function saveData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+/* Geniş Bilgisayar Ekranları (1024px ve üzeri) - 3 Kolon */
+@media (min-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 22px;
+  }
 }
-
-// MIME türleri
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon'
-};
-
-const server = http.createServer((req, res) => {
-  // CORS başlıkları
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
-
-  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = parsedUrl.pathname;
-
-  // --- API ENDPOINTLERİ ---
-
-  // GET /api/data (Halka Açık Menü - PIN ve Siparişler ASLA SIZDIRILMAZ)
-  if (pathname === '/api/data' && req.method === 'GET') {
-    const data = loadData();
-    const safeStore = { ...data.store };
-    delete safeStore.pin; // Müşteriye PIN asla gitmez!
-    
-    const publicData = {
-      store: safeStore,
-      categories: data.categories || [],
-      products: data.products || [],
-      coupons: data.coupons || []
-    };
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(publicData));
-    return;
-  }
-
-  // GET /api/admin-data (Sadece PIN ile giriş yapmış Esnafa özel tam veri)
-  if (pathname === '/api/admin-data' && req.method === 'GET') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim. Lütfen giriş yapın.' }));
-      return;
-    }
-    const data = loadData();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(data));
-    return;
-  }
-
-  // POST /api/verify-pin (PIN doğrulama ve güvenli Token üretme)
-  if (pathname === '/api/verify-pin' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const { pin } = JSON.parse(body);
-        const data = loadData();
-        const correctPin = String((data.store && data.store.pin) || '1234');
-        if (String(pin).trim() === correctPin) {
-          const token = crypto.randomBytes(24).toString('hex');
-          activeSessions.add(token);
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true, token }));
-        } else {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Hatalı PIN kodu' }));
-        }
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz istek' }));
-      }
-    });
-    return;
-  }
-
-  // POST /api/store (Dükkan bilgilerini güncelleme - GÜVENLİK KORUMALI)
-  if (pathname === '/api/store' && req.method === 'POST') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
-      return;
-    }
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const newStore = JSON.parse(body);
-        const data = loadData();
-        data.store = { ...data.store, ...newStore };
-        saveData(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, store: data.store }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz veri' }));
-      }
-    });
-    return;
-  }
-
-  // POST /api/products (Ürün ekle/güncelle - GÜVENLİK KORUMALI)
-  if (pathname === '/api/products' && req.method === 'POST') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
-      return;
-    }
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const item = JSON.parse(body);
-        const data = loadData();
-        if (item.id) {
-          const idx = data.products.findIndex(p => p.id === item.id);
-          if (idx !== -1) {
-            data.products[idx] = { ...data.products[idx], ...item };
-          } else {
-            data.products.push(item);
-          }
-        } else {
-          item.id = Date.now().toString();
-          data.products.push(item);
-        }
-        saveData(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, products: data.products }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz ürün verisi' }));
-      }
-    });
-    return;
-  }
-
-  // DELETE /api/products (Ürün silme - GÜVENLİK KORUMALI)
-  if (pathname === '/api/products' && req.method === 'DELETE') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
-      return;
-    }
-    const id = parsedUrl.searchParams.get('id');
-    const data = loadData();
-    data.products = data.products.filter(p => p.id !== id);
-    saveData(data);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, products: data.products }));
-    return;
-  }
-
-  // POST /api/categories (Kategori ekle - GÜVENLİK KORUMALI)
-  if (pathname === '/api/categories' && req.method === 'POST') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
-      return;
-    }
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const newCat = JSON.parse(body);
-        const data = loadData();
-        data.categories = data.categories || [];
-        if (!newCat.id) newCat.id = 'cat_' + Date.now();
-        data.categories.push(newCat);
-        saveData(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, categories: data.categories }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz kategori verisi' }));
-      }
-    });
-    return;
-  }
-
-  // DELETE /api/categories (Kategori silme - GÜVENLİK KORUMALI)
-  if (pathname === '/api/categories' && req.method === 'DELETE') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim' }));
-      return;
-    }
-    const id = parsedUrl.searchParams.get('id');
-    const data = loadData();
-    data.categories = (data.categories || []).filter(c => c.id !== id);
-    saveData(data);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, categories: data.categories }));
-    return;
-  }
-
-  // GET /api/orders (Siparişler - GÜVENLİK KORUMALI, KVKK UYUMLU)
-  if (pathname === '/api/orders' && req.method === 'GET') {
-    if (!isAuthenticated(req)) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Yetkisiz erişim. Siparişleri sadece yetkili esnaf görebilir.' }));
-      return;
-    }
-    const data = loadData();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(data.orders || []));
-    return;
-  }
-
-  // POST /api/coupons (Kupon listesini güncelleme)
-  if (pathname === '/api/coupons' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const coupons = JSON.parse(body);
-        const data = loadData();
-        data.coupons = coupons;
-        saveData(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, coupons: data.coupons }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz kupon verisi' }));
-      }
-    });
-    return;
-  }
-
-  // POST /api/orders (Sipariş log kaydı)
-  if (pathname === '/api/orders' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const order = JSON.parse(body);
-        order.id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
-        order.createdAt = new Date().toISOString();
-        const data = loadData();
-        data.orders = data.orders || [];
-        data.orders.unshift(order);
-        if (data.orders.length > 50) data.orders = data.orders.slice(0, 50); // son 50 sipariş
-        saveData(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, orderId: order.id }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Geçersiz sipariş verisi' }));
-      }
-    });
-    return;
-  }
-
-  // --- STATİK DOSYA SUNUCUSU ---
-  let filePath = path.join(PUBLIC_DIR, pathname === '/' ? 'index.html' : pathname);
-  
-  // Güvenlik: Dizin dışına çıkışı engelle
-  if (!filePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403);
-    res.end('Erişim reddedildi');
-    return;
-  }
-
-  // Dosya uzantısı yoksa html olarak dene (örn: /admin -> /admin.html)
-  if (!path.extname(filePath)) {
-    if (fs.existsSync(filePath + '.html')) {
-      filePath += '.html';
-    }
-  }
-
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<h1>404 - Sayfa Bulunamadı</h1><p><a href="/">Ana Sayfaya Dön</a></p>');
-      } else {
-        res.writeHead(500);
-        res.end(`Sunucu Hatası: ${err.code}`);
-      }
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-// Başlangıçta veritabanını hazırla
-loadData();
-
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`===============================================`);
-  console.log(`🚀 Esnaf Sipariş Sistemi Çalışıyor!`);
-  console.log(`📱 Müşteri Menüsü : http://localhost:${PORT}`);
-  console.log(`⚙️  Esnaf Paneli   : http://localhost:${PORT}/admin.html`);
-  console.log(`===============================================`);
-});
