@@ -1,7 +1,9 @@
 // Müşteri Menüsü, Kupon ve WhatsApp Entegrasyon Mantığı (Çoklu Restoran Destekli)
 
 const urlParams = new URLSearchParams(window.location.search);
-const currentStoreSlug = (urlParams.get('store') || 'lagabla').toLowerCase().trim();
+let initialSlug = (urlParams.get('store') || 'lagabia').toLowerCase().trim();
+if (initialSlug === 'lagabla') initialSlug = 'lagabia';
+const currentStoreSlug = initialSlug;
 
 let storeData = {
   store: {},
