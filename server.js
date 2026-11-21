@@ -39,7 +39,8 @@ function saveData(data) {
 }
 
 function getStore(data, storeId) {
-  storeId = (storeId || 'lagabla').toLowerCase().trim();
+  storeId = (storeId || 'lagabia').toLowerCase().trim();
+  if (storeId === 'lagabla') storeId = 'lagabia';
   if (!data.stores[storeId]) {
     const keys = Object.keys(data.stores);
     if (keys.length > 0) return { id: keys[0], ...data.stores[keys[0]] };
@@ -75,7 +76,8 @@ const server = http.createServer((req, res) => {
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
   const pathname = parsedUrl.pathname;
-  const storeQuery = parsedUrl.searchParams.get('store') || 'lagabla';
+  let storeQuery = (parsedUrl.searchParams.get('store') || 'lagabia').toLowerCase().trim();
+  if (storeQuery === 'lagabla') storeQuery = 'lagabia';
 
   // --- SÜPER PATRON API'LERİ ---
   if (pathname === '/api/super-admin/stores' && req.method === 'GET') {
