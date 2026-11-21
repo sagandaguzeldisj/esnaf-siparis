@@ -571,6 +571,10 @@ body {
   transform: scale(0.98);
 }
 
+.header-big-logo-wrap {
+  display: none;
+}
+
 /* =========================================================
    🖥️ MASAÜSTÜ & BİLGİSAYAR GÖRÜNÜMÜ (RESPONSIVE DESKTOP)
    Mobildeki (< 768px) kusursuz tasarım aynen kalır.
@@ -579,6 +583,17 @@ body {
 @media (min-width: 768px) {
   body {
     background-color: #f1f5f9;
+  }
+
+  .header-big-logo-wrap {
+    display: block;
+  }
+
+  .header-big-logo {
+    height: 62px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
   }
 
   .store-header {

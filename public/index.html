@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sipariş Menüsü</title>
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#065f46">
 </head>
@@ -24,11 +24,16 @@
           </a>
         </div>
 
-        <div class="store-info" style="display: flex; align-items: center; gap: 14px;">
-          <img id="store-logo" src="https://cdn-icons-png.flaticon.com/512/3170/3170733.png" alt="Logo" style="width: 56px; height: 56px; border-radius: 14px; background: white; padding: 4px; box-shadow: var(--shadow-sm); object-fit: contain;">
-          <div>
-            <h1 id="store-name">La Gabia</h1>
-            <p id="store-slogan">Geleneksel İtalyan Mutfağı & Gurme Lezzetler</p>
+        <div class="store-info" style="display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <img id="store-logo" src="logo_square.svg" alt="La Gabia Kare Logo" style="width: 58px; height: 58px; border-radius: 14px; box-shadow: var(--shadow-sm); object-fit: contain;">
+            <div>
+              <h1 id="store-name">La Gabia</h1>
+              <p id="store-slogan">Geleneksel İtalyan Mutfağı & Gurme Lezzetler</p>
+            </div>
+          </div>
+          <div class="header-big-logo-wrap">
+            <img src="logo_big.svg" alt="La Gabia Restaurant" class="header-big-logo">
           </div>
         </div>
 
@@ -74,7 +79,10 @@
     <div class="cart-modal" id="cart-modal">
       <div class="cart-drawer">
         <div class="drawer-header">
-          <h2 class="drawer-title">🛒 Sipariş Sepetiniz</h2>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="logo_square.svg" alt="La Gabia" style="width: 28px; height: 28px; border-radius: 8px;">
+            <h2 class="drawer-title">Sipariş Sepetiniz</h2>
+          </div>
           <button class="close-btn" id="close-cart-btn">&times;</button>
         </div>
 

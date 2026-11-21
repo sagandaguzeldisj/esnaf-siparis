@@ -1,0 +1,19 @@
+<svg viewBox="0 0 460 120" width="460" height="120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sol Logo Amblemi -->
+  <g transform="translate(10, 10)">
+    <circle cx="50" cy="50" r="48" fill="none" stroke="#F6EFE3" stroke-width="2.5"/>
+    <path d="M25 76 V46 A25 25 0 0 1 75 46 V76" fill="none" stroke="#F6EFE3" stroke-width="2.5"/>
+    <g stroke="#F6EFE3" stroke-width="2" stroke-linecap="round">
+      <line x1="33" y1="29" x2="33" y2="76"/>
+      <line x1="41" y1="24" x2="41" y2="76"/>
+      <line x1="50" y1="22" x2="50" y2="76"/>
+      <line x1="59" y1="24" x2="59" y2="76"/>
+      <line x1="67" y1="29" x2="67" y2="76"/>
+    </g>
+    <circle cx="50" cy="54" r="9" fill="#E08A5F" stroke="#1F3A2E" stroke-width="3"/>
+    <line x1="18" y1="76" x2="82" y2="76" stroke="#F6EFE3" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+  <!-- Metin Logosu -->
+  <text x="135" y="65" font-family="'Cormorant Garamond', Georgia, serif" font-size="52" font-weight="600" letter-spacing="4" fill="#F6EFE3">La Gabia</text>
+  <text x="138" y="90" font-family="'Inter', sans-serif" font-size="12" font-weight="600" letter-spacing="7" fill="#E08A5F">RESTAURANT</text>
+</svg>
