@@ -571,8 +571,11 @@ body {
   transform: scale(0.98);
 }
 
-.header-big-logo-wrap {
-  display: none;
+.header-brand-logo {
+  height: 54px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
 /* =========================================================
@@ -585,14 +588,8 @@ body {
     background-color: #f1f5f9;
   }
 
-  .header-big-logo-wrap {
-    display: block;
-  }
-
-  .header-big-logo {
-    height: 78px;
-    width: auto;
-    object-fit: contain;
+  .header-brand-logo {
+    height: 76px;
     filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.25));
   }
 
