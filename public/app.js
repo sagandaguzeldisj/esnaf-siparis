@@ -1,4 +1,7 @@
-// Müşteri Menüsü, Kupon ve WhatsApp Entegrasyon Mantığı
+// Müşteri Menüsü, Kupon ve WhatsApp Entegrasyon Mantığı (Çoklu Restoran Destekli)
+
+const urlParams = new URLSearchParams(window.location.search);
+const currentStoreSlug = (urlParams.get('store') || 'lagabla').toLowerCase().trim();
 
 let storeData = {
   store: {},
@@ -60,7 +63,7 @@ function setupCategoryScroll() {
 // Menü ve Dükkan Verisini Çek
 async function loadStoreData() {
   try {
-    const res = await fetch('/api/data');
+    const res = await fetch(`/api/data?store=${encodeURIComponent(currentStoreSlug)}`);
     if (res.ok) {
       storeData = await res.json();
       applyStoreInfo();
@@ -80,12 +83,20 @@ function applyStoreInfo() {
   document.getElementById('delivery-time').textContent = s.deliveryTime || '30-45 dk';
   document.getElementById('min-order').textContent = (s.minOrder || 0) + ' TL';
 
+  const ratingEl = document.getElementById('store-rating');
+  if (ratingEl && s.rating) ratingEl.textContent = s.rating;
+  const reviewsEl = document.getElementById('store-reviews');
+  if (reviewsEl && s.reviewCount) reviewsEl.textContent = s.reviewCount;
+
+  const adminLink = document.getElementById('header-admin-link');
+  if (adminLink) adminLink.href = `/admin.html?store=${encodeURIComponent(currentStoreSlug)}`;
+
   const logoEl = document.getElementById('store-logo');
   if (logoEl && s.logo) logoEl.src = s.logo;
 
   const statusBadge = document.getElementById('store-status');
   const statusText = document.getElementById('status-text');
-  if (s.isOpen) {
+  if (s.isOpen !== false) {
     statusBadge.className = 'status-badge open';
     statusText.textContent = 'Sipariş Alıyor';
   } else {
@@ -139,7 +150,10 @@ function renderProducts(searchQuery = '') {
     const inCartQty = cartItem ? cartItem.quantity : 0;
 
     card.innerHTML = `
-      <img src="${p.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80'}" alt="${p.name}" class="product-img" loading="lazy">
+      <div class="product-img-wrap">
+        <img src="${p.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80'}" alt="${p.name}" class="product-img" loading="lazy">
+        ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+      </div>
       <div class="product-details">
         <h3 class="product-name">${p.name}</h3>
         <p class="product-desc">${p.description || ''}</p>
@@ -237,6 +251,25 @@ function updateCartUI() {
     if (drawerSubtotal) drawerSubtotal.textContent = '0 TL';
     if (discountRow) discountRow.style.display = 'none';
     if (drawerTotal) drawerTotal.textContent = '0 TL';
+  }
+
+  // Ücretsiz Teslimat İlerleme Çubuğu Güncellemesi
+  const freeDeliveryThreshold = 400;
+  const progressFill = document.getElementById('delivery-progress-fill');
+  const progressText = document.getElementById('free-delivery-text');
+  if (progressFill && progressText) {
+    if (subtotal === 0) {
+      progressFill.style.width = '0%';
+      progressText.innerHTML = `🎁 <strong>${freeDeliveryThreshold} TL</strong> üzerine Ücretsiz Teslimat!`;
+    } else if (subtotal < freeDeliveryThreshold) {
+      const pct = Math.min(100, Math.round((subtotal / freeDeliveryThreshold) * 100));
+      const remaining = freeDeliveryThreshold - subtotal;
+      progressFill.style.width = pct + '%';
+      progressText.innerHTML = `🎁 Ücretsiz teslimata <strong>${remaining} TL</strong> kaldı!`;
+    } else {
+      progressFill.style.width = '100%';
+      progressText.innerHTML = `🎉 <strong>Tebrikler!</strong> Ücretsiz Teslimat Kazandınız!`;
+    }
   }
 
   // Minimum Paket Uyarısı
@@ -411,6 +444,7 @@ _Siparişi onaylıyor musunuz?_`;
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        store: currentStoreSlug,
         customer: { name, phone, address, note },
         items: cart,
         payment,

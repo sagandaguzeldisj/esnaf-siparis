@@ -230,13 +230,69 @@ body {
   transform: scale(0.99);
 }
 
-.product-img {
+.product-img-wrap {
+  position: relative;
   width: 85px;
   height: 85px;
   border-radius: var(--radius-sm);
-  object-fit: cover;
+  overflow: hidden;
   flex-shrink: 0;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   background: #e2e8f0;
+  transition: transform 0.35s ease;
+}
+
+.product-card:hover .product-img {
+  transform: scale(1.08);
+}
+
+.product-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  letter-spacing: 0.2px;
+  z-index: 2;
+}
+
+/* Ücretsiz Teslimat İlerleme Çubuğu (Gamified Cart) */
+.free-delivery-box {
+  padding: 12px 18px;
+  background: #ecfdf5;
+  border-bottom: 1px solid #d1fae5;
+}
+
+.free-delivery-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #065f46;
+  margin-bottom: 6px;
+}
+
+.progress-track {
+  height: 6px;
+  background: #a7f3d0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 999px;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .product-details {
@@ -589,7 +645,7 @@ body {
     box-shadow: var(--shadow-md);
   }
 
-  .product-img {
+  .product-img-wrap {
     width: 95px;
     height: 95px;
   }
