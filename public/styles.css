@@ -644,15 +644,14 @@ body {
 
   /* Sağ Taraf: Soldaki Menüyle Birebir Eşit Uzunlukta Canlı Sepet */
   .cart-modal {
-    position: sticky !important;
-    top: 24px !important;
+    position: relative !important;
+    top: 0 !important;
     display: flex !important;
     flex-direction: column !important;
     background: transparent !important;
     backdrop-filter: none !important;
     width: 410px !important;
     min-width: 410px !important;
-    height: 100% !important;
     align-self: stretch !important;
     z-index: 10 !important;
   }
@@ -675,8 +674,11 @@ body {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
     overflow-y: auto !important;
+  }
+
+  .whatsapp-submit-btn {
+    margin-top: auto !important;
   }
 
   /* Masaüstünde Kapat Butonuna İhtiyaç Yok */
