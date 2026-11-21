@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sipariş Menüsü</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#065f46">
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="main-column">
+      <!-- Üst Başlık & Dükkan Bilgisi -->
+      <header class="store-header">
+        <div class="store-top-bar">
+          <div id="store-status" class="status-badge open">
+            <span class="status-dot"></span>
+            <span id="status-text">Sipariş Alıyor</span>
+          </div>
+          <a href="/admin.html" class="admin-link-btn">
+            ⚙️ Esnaf Paneli
+          </a>
+        </div>
+
+        <div class="store-info" style="display: flex; align-items: center; gap: 14px;">
+          <img id="store-logo" src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Logo" style="width: 52px; height: 52px; border-radius: 12px; background: white; padding: 4px; box-shadow: var(--shadow-sm); object-fit: contain;">
+          <div>
+            <h1 id="store-name">Meşhur Usta Pide & Kebap</h1>
+            <p id="store-slogan">1994'ten Beri Değişmeyen Lezzet</p>
+          </div>
+        </div>
+
+        <div class="store-meta">
+          <span>⏱️ <strong id="delivery-time">30-45 dk</strong></span>
+          <span>🛵 Min: <strong id="min-order">150 TL</strong></span>
+          <span>📍 Kadıköy</span>
+        </div>
+      </header>
+
+      <!-- Arama Çubuğu -->
+      <div class="search-bar-wrap">
+        <input type="text" id="search-input" class="search-input" placeholder="Menüde yemek veya içecek ara...">
+      </div>
+
+      <!-- Kategori Çipleri (Yatay Kaydırmalı) -->
+      <nav class="category-tabs" id="category-tabs">
+        <button class="category-chip active" data-category="all">Tümü</button>
+        <!-- Dinamik olarak yüklenecek -->
+      </nav>
+
+      <!-- Ürün Listesi Bölümü -->
+      <main class="product-section">
+        <div class="product-grid" id="product-list">
+          <!-- Dinamik ürün kartları -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Altta Sabit Kalan Sepet Barı (Mobil İçin) -->
+    <div class="sticky-cart-bar" id="cart-bar" style="display: none;">
+      <button class="cart-bar-btn" id="open-cart-btn">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="cart-count-badge" id="cart-total-qty">0</span>
+          <span>Sepeti Görüntüle</span>
+        </div>
+        <span id="cart-bar-total">0 TL</span>
+      </button>
+    </div>
+
+    <!-- Sepet Çekmecesi (Modal / Drawer) -->
+    <div class="cart-modal" id="cart-modal">
+      <div class="cart-drawer">
+        <div class="drawer-header">
+          <h2 class="drawer-title">🛒 Sipariş Sepetiniz</h2>
+          <button class="close-btn" id="close-cart-btn">&times;</button>
+        </div>
+
+        <div class="drawer-content">
+          <!-- Sepetteki Ürünler -->
+          <div id="cart-items-container"></div>
+
+          <!-- Kupon Kodu Alanı -->
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <input type="text" id="coupon-input" class="form-input" placeholder="İndirim Kuponu (örn: ILK10)" style="text-transform: uppercase;">
+            <button id="apply-coupon-btn" class="add-btn" style="white-space: nowrap; padding: 0 16px;">Uygula</button>
+          </div>
+          <div id="coupon-message" style="font-size: 12px; margin-top: 4px; display: none;"></div>
+
+          <!-- Toplam Tutar Özeti -->
+          <div style="margin: 14px 0; padding: 12px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; color: var(--text-muted); margin-bottom: 4px;">
+              <span>Ara Toplam:</span>
+              <span id="drawer-subtotal">0 TL</span>
+            </div>
+            <div id="discount-row" style="display: none; justify-content: space-between; font-size: 14px; color: var(--primary); margin-bottom: 4px; font-weight: 600;">
+              <span>İndirim (<span id="discount-code-name"></span>):</span>
+              <span id="drawer-discount">-0 TL</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 16px; border-top: 1px dashed var(--border); padding-top: 6px;">
+              <span>Ödenecek Tutar:</span>
+              <span id="drawer-total-amount" style="color: var(--primary);">0 TL</span>
+            </div>
+            <div id="min-order-warning" style="display: none; color: var(--danger); font-size: 12px; margin-top: 6px;">
+              ⚠️ Minimum paket tutarının altındasınız!
+            </div>
+          </div>
+
+          <!-- Müşteri ve Adres Formu -->
+          <div class="form-group">
+            <label class="form-label">Adınız Soyadınız *</label>
+            <input type="text" id="cust-name" class="form-input" placeholder="Örn: Ahmet Yılmaz" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Telefon Numaranız *</label>
+            <input type="tel" id="cust-phone" class="form-input" placeholder="05xx xxx xx xx" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Teslimat Adresiniz *</label>
+            <textarea id="cust-address" class="form-textarea" rows="2" placeholder="Mahalle, sokak, bina ve daire no..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Sipariş Notu (Opsiyonel)</label>
+            <input type="text" id="cust-note" class="form-input" placeholder="Örn: Acılı olsun, zili çalmayın...">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Ödeme Yöntemi</label>
+            <select id="cust-payment" class="form-select">
+              <option value="Kapıda Kredi Kartı (POS)">💳 Kapıda Kredi Kartı (POS)</option>
+              <option value="Kapıda Nakit">💵 Kapıda Nakit</option>
+              <option value="Gel-Al (Dükkandan Teslim)">🏃 Gel-Al (Dükkandan Alacağım)</option>
+            </select>
+          </div>
+
+          <!-- WhatsApp Gönder Butonu -->
+          <button id="send-whatsapp-btn" class="whatsapp-submit-btn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31c-.82-1.31-1.26-2.83-1.26-4.38 0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c.01 4.54-3.69 8.23-8.22 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.4 1.41.51.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.31z"/>
+            </svg>
+            Siparişi WhatsApp ile Gönder
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

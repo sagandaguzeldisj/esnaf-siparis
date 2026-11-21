@@ -1,0 +1,207 @@
+{
+  "store": {
+    "name": "Meşhur Usta Pide & Kebap",
+    "slogan": "1994'ten Beri Değişmeyen Lezzet",
+    "phone": "905011550917",
+    "minOrder": 150,
+    "deliveryTime": "30-45 dk",
+    "isOpen": true,
+    "address": "Atatürk Cad. No:42/A, Kadıköy / İstanbul",
+    "instagram": "@meshurustapide",
+    "pin": "1234"
+  },
+  "categories": [
+    {
+      "id": "kebaplar",
+      "name": "Kebap & Dürümler"
+    },
+    {
+      "id": "lahmacun",
+      "name": "Lahmacun"
+    },
+    {
+      "id": "icecekler",
+      "name": "İçecekler"
+    },
+    {
+      "id": "tatlilar",
+      "name": "Tatlılar"
+    },
+    {
+      "id": "p__j_n",
+      "name": "pğıjın"
+    }
+  ],
+  "products": [
+    {
+      "id": "1",
+      "name": "Kuşbaşılı Kaşarlı Pide",
+      "category": "pideler",
+      "price": 240,
+      "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
+      "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "2",
+      "name": "Kıymalı Yumurtalı Pide",
+      "category": "pideler",
+      "price": 210,
+      "description": "Geleneksel kıymalı harç ve köy yumurtası ile enfes lezzet.",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "3",
+      "name": "Çıtır Lahmacun",
+      "category": "lahmacun",
+      "price": 85,
+      "description": "Taş fırında incecik açılmış çıtır hamur, zırh kıyması, domates ve maydanoz.",
+      "image": "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "4",
+      "name": "Adana Dürüm",
+      "category": "kebaplar",
+      "price": 220,
+      "description": "Zırhta çekilmiş acılı kuzu-dana kıyması, közlenmiş biber, sumaklı soğan ve lavaş.",
+      "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "5",
+      "name": "Urfa Dürüm (Acısız)",
+      "category": "kebaplar",
+      "price": 220,
+      "description": "Özel baharatlı zırh kıyması, lavaş, közlenmiş domates ve yeşillik.",
+      "image": "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "6",
+      "name": "Fıstıklı Künefe",
+      "category": "tatlilar",
+      "price": 150,
+      "description": "Hatay peynirli, bol şerbetli ve hakiki Antep fıstıklı sıcak künefe.",
+      "image": "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "7",
+      "name": "Kutu Kola (330ml)",
+      "category": "icecekler",
+      "price": 45,
+      "description": "Soğuk servis edilir.",
+      "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    },
+    {
+      "id": "8",
+      "name": "Büyük Boy Yayık Ayran (300ml)",
+      "category": "icecekler",
+      "price": 35,
+      "description": "Bol köpüklü taze yayık ayranı.",
+      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
+      "isAvailable": true
+    }
+  ],
+  "orders": [
+    {
+      "customer": {
+        "name": "OUNUJL",
+        "phone": "JPIJPIJIJIPJ",
+        "address": "KMIOPM",
+        "note": "İOIJKMPI"
+      },
+      "items": [
+        {
+          "product": {
+            "id": "4",
+            "name": "Adana Dürüm",
+            "category": "kebaplar",
+            "price": 220,
+            "description": "Zırhta çekilmiş acılı kuzu-dana kıyması, közlenmiş biber, sumaklı soğan ve lavaş.",
+            "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+            "isAvailable": true
+          },
+          "quantity": 1
+        }
+      ],
+      "payment": "Kapıda Kredi Kartı (POS)",
+      "coupon": "ILK10",
+      "discount": 22,
+      "total": 198,
+      "id": "ORD-3414",
+      "createdAt": "2026-11-19T16:57:23.506Z"
+    },
+    {
+      "customer": {
+        "name": "Bb",
+        "phone": "087544585545855",
+        "address": "Bbhhjj",
+        "note": "Bbhh"
+      },
+      "items": [
+        {
+          "product": {
+            "id": "1",
+            "name": "Kuşbaşılı Kaşarlı Pide",
+            "category": "pideler",
+            "price": 240,
+            "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
+            "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
+            "isAvailable": true
+          },
+          "quantity": 1
+        }
+      ],
+      "payment": "Kapıda Kredi Kartı (POS)",
+      "coupon": null,
+      "discount": 0,
+      "total": 240,
+      "id": "ORD-5862",
+      "createdAt": "2026-11-19T16:05:14.570Z"
+    },
+    {
+      "customer": {
+        "name": "Nsnajjs jajsjsjsjs",
+        "phone": "5011550917",
+        "address": "Jajajsjsjsjjs",
+        "note": "Deneme"
+      },
+      "items": [
+        {
+          "product": {
+            "id": "8",
+            "name": "Büyük Boy Yayık Ayran (300ml)",
+            "category": "icecekler",
+            "price": 35,
+            "description": "Bol köpüklü taze yayık ayranı.",
+            "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
+            "isAvailable": true
+          },
+          "quantity": 1
+        },
+        {
+          "product": {
+            "id": "1",
+            "name": "Kuşbaşılı Kaşarlı Pide",
+            "category": "pideler",
+            "price": 240,
+            "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
+            "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
+            "isAvailable": true
+          },
+          "quantity": 1
+        }
+      ],
+      "payment": "Kapıda Kredi Kartı (POS)",
+      "coupon": "ILK10",
+      "discount": 28,
+      "total": 247,
+      "id": "ORD-6603",
+      "createdAt": "2026-11-19T15:47:35.442Z"
+    }
+  ]
+}
