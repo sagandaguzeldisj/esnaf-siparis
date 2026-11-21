@@ -1,207 +1,259 @@
 {
-  "store": {
-    "name": "Meşhur Usta Pide & Kebap",
-    "slogan": "1994'ten Beri Değişmeyen Lezzet",
-    "phone": "905011550917",
-    "minOrder": 150,
-    "deliveryTime": "30-45 dk",
-    "isOpen": true,
-    "address": "Atatürk Cad. No:42/A, Kadıköy / İstanbul",
-    "instagram": "@meshurustapide",
-    "pin": "1234"
-  },
-  "categories": [
-    {
-      "id": "kebaplar",
-      "name": "Kebap & Dürümler"
-    },
-    {
-      "id": "lahmacun",
-      "name": "Lahmacun"
-    },
-    {
-      "id": "icecekler",
-      "name": "İçecekler"
-    },
-    {
-      "id": "tatlilar",
-      "name": "Tatlılar"
-    },
-    {
-      "id": "p__j_n",
-      "name": "pğıjın"
-    }
-  ],
-  "products": [
-    {
-      "id": "1",
-      "name": "Kuşbaşılı Kaşarlı Pide",
-      "category": "pideler",
-      "price": 240,
-      "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
-      "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "2",
-      "name": "Kıymalı Yumurtalı Pide",
-      "category": "pideler",
-      "price": 210,
-      "description": "Geleneksel kıymalı harç ve köy yumurtası ile enfes lezzet.",
-      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "3",
-      "name": "Çıtır Lahmacun",
-      "category": "lahmacun",
-      "price": 85,
-      "description": "Taş fırında incecik açılmış çıtır hamur, zırh kıyması, domates ve maydanoz.",
-      "image": "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "4",
-      "name": "Adana Dürüm",
-      "category": "kebaplar",
-      "price": 220,
-      "description": "Zırhta çekilmiş acılı kuzu-dana kıyması, közlenmiş biber, sumaklı soğan ve lavaş.",
-      "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "5",
-      "name": "Urfa Dürüm (Acısız)",
-      "category": "kebaplar",
-      "price": 220,
-      "description": "Özel baharatlı zırh kıyması, lavaş, közlenmiş domates ve yeşillik.",
-      "image": "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "6",
-      "name": "Fıstıklı Künefe",
-      "category": "tatlilar",
-      "price": 150,
-      "description": "Hatay peynirli, bol şerbetli ve hakiki Antep fıstıklı sıcak künefe.",
-      "image": "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "7",
-      "name": "Kutu Kola (330ml)",
-      "category": "icecekler",
-      "price": 45,
-      "description": "Soğuk servis edilir.",
-      "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    },
-    {
-      "id": "8",
-      "name": "Büyük Boy Yayık Ayran (300ml)",
-      "category": "icecekler",
-      "price": 35,
-      "description": "Bol köpüklü taze yayık ayranı.",
-      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
-      "isAvailable": true
-    }
-  ],
-  "orders": [
-    {
-      "customer": {
-        "name": "OUNUJL",
-        "phone": "JPIJPIJIJIPJ",
-        "address": "KMIOPM",
-        "note": "İOIJKMPI"
+  "stores": {
+    "lagabla": {
+      "store": {
+        "id": "lagabla",
+        "name": "La Gabla",
+        "slogan": "1994'ten Beri Geleneksel İtalyan Lezzetleri",
+        "phone": "905011550917",
+        "minOrder": 300,
+        "deliveryTime": "30-45 dk",
+        "isOpen": true,
+        "address": "Moda Cad. No:14/B, Kadıköy / İstanbul",
+        "instagram": "@lagablakadikoy",
+        "logo": "https://cdn-icons-png.flaticon.com/512/3170/3170733.png",
+        "coverImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+        "rating": "4.9",
+        "reviewCount": "480+",
+        "pin": "1234"
       },
-      "items": [
-        {
-          "product": {
-            "id": "4",
-            "name": "Adana Dürüm",
-            "category": "kebaplar",
-            "price": 220,
-            "description": "Zırhta çekilmiş acılı kuzu-dana kıyması, közlenmiş biber, sumaklı soğan ve lavaş.",
-            "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
-            "isAvailable": true
-          },
-          "quantity": 1
-        }
+      "coupons": [
+        { "code": "GURME10", "discountPercent": 10, "minCart": 250 },
+        { "code": "VIVAITALIA", "discountPercent": 15, "minCart": 400 }
       ],
-      "payment": "Kapıda Kredi Kartı (POS)",
-      "coupon": "ILK10",
-      "discount": 22,
-      "total": 198,
-      "id": "ORD-3414",
-      "createdAt": "2026-11-19T16:57:23.506Z"
-    },
-    {
-      "customer": {
-        "name": "Bb",
-        "phone": "087544585545855",
-        "address": "Bbhhjj",
-        "note": "Bbhh"
-      },
-      "items": [
-        {
-          "product": {
-            "id": "1",
-            "name": "Kuşbaşılı Kaşarlı Pide",
-            "category": "pideler",
-            "price": 240,
-            "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
-            "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
-            "isAvailable": true
-          },
-          "quantity": 1
-        }
+      "categories": [
+        { "id": "antipasti", "name": "Antipasti" },
+        { "id": "pizza", "name": "Pizza" },
+        { "id": "pasta", "name": "Pasta" },
+        { "id": "secondi", "name": "Secondi" },
+        { "id": "dolci", "name": "Dolci" },
+        { "id": "bevande", "name": "İçecekler" }
       ],
-      "payment": "Kapıda Kredi Kartı (POS)",
-      "coupon": null,
-      "discount": 0,
-      "total": 240,
-      "id": "ORD-5862",
-      "createdAt": "2026-11-19T16:05:14.570Z"
-    },
-    {
-      "customer": {
-        "name": "Nsnajjs jajsjsjsjs",
-        "phone": "5011550917",
-        "address": "Jajajsjsjsjjs",
-        "note": "Deneme"
-      },
-      "items": [
+      "products": [
         {
-          "product": {
-            "id": "8",
-            "name": "Büyük Boy Yayık Ayran (300ml)",
-            "category": "icecekler",
-            "price": 35,
-            "description": "Bol köpüklü taze yayık ayranı.",
-            "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
-            "isAvailable": true
-          },
-          "quantity": 1
+          "id": "101",
+          "name": "Bruschetta al Pomodoro",
+          "category": "antipasti",
+          "price": 190,
+          "description": "Taş fırında kızarmış ekmek, çeri domates, sarımsak, taze fesleğen ve sızma zeytinyağı.",
+          "image": "https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Çok Satan",
+          "isAvailable": true
         },
         {
-          "product": {
-            "id": "1",
-            "name": "Kuşbaşılı Kaşarlı Pide",
-            "category": "pideler",
-            "price": 240,
-            "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
-            "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
-            "isAvailable": true
-          },
-          "quantity": 1
+          "id": "102",
+          "name": "Caprese di Bufala",
+          "category": "antipasti",
+          "price": 240,
+          "description": "İtalyan Manda Mozzarella, salkım domates, fesleğen pesto ve Modena balzamik sosu.",
+          "image": "https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=600&q=80",
+          "badge": "🌿 Taze & Hafif",
+          "isAvailable": true
+        },
+        {
+          "id": "103",
+          "name": "Carpaccio di Manzo",
+          "category": "antipasti",
+          "price": 320,
+          "description": "İnce dilimlenmiş marine dana bonfile, taze roka, trüflü zeytinyağı ve parmesan pulları.",
+          "image": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+          "badge": "👨‍🍳 Şefin Seçimi",
+          "isAvailable": true
+        },
+        {
+          "id": "104",
+          "name": "Arancini Siciliani",
+          "category": "antipasti",
+          "price": 220,
+          "description": "Safranlı risotto ve erimiş mozzarella dolgulu çıtır Sicilya pirinç topları, fesleğenli domates sosuyla.",
+          "image": "https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Çok Satan",
+          "isAvailable": true
+        },
+        {
+          "id": "105",
+          "name": "Minestrone Çorbası",
+          "category": "antipasti",
+          "price": 170,
+          "description": "Mevsim sebzeleri, beyaz fasulye, fesleğen pesto ve parmesan kıtırları ile geleneksel İtalyan çorbası.",
+          "image": "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80",
+          "badge": "",
+          "isAvailable": true
+        },
+        {
+          "id": "106",
+          "name": "Pizza Margherita Classica",
+          "category": "pizza",
+          "price": 280,
+          "description": "San Marzano domates sosu, taze fior di latte mozzarella, taze fesleğen ve sızma zeytinyağı.",
+          "image": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80",
+          "badge": "⭐ Orijinal",
+          "isAvailable": true
+        },
+        {
+          "id": "107",
+          "name": "Pizza Quattro Formaggi",
+          "category": "pizza",
+          "price": 340,
+          "description": "Gorgonzola, fior di latte mozzarella, tütsülenmiş scamorza ve Parmigiano Reggiano.",
+          "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Çok Satan",
+          "isAvailable": true
+        },
+        {
+          "id": "108",
+          "name": "Fettuccine ai Funghi Porcini",
+          "category": "pasta",
+          "price": 310,
+          "description": "Taze el yapımı fettuccine, dağ porçini mantarları, sarımsak, taze kekik ve trüf kreması.",
+          "image": "https://images.unsplash.com/photo-1621996346565-e3d5d6281729?auto=format&fit=crop&w=600&q=80",
+          "badge": "👨‍🍳 Şefin Spesiyali",
+          "isAvailable": true
+        },
+        {
+          "id": "109",
+          "name": "Penne all'Arrabbiata",
+          "category": "pasta",
+          "price": 250,
+          "description": "Acı Calabrian biberi, sarımsak, San Marzano domates sosu, maydanoz ve pecorino.",
+          "image": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80",
+          "badge": "🌶️ Acılı",
+          "isAvailable": true
+        },
+        {
+          "id": "110",
+          "name": "Tiramisu Tradizionale",
+          "category": "dolci",
+          "price": 160,
+          "description": "Savoiardi bisküvileri, taze espresso, hakiki mascarpone kreması ve Valrhona kakao tozu.",
+          "image": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Efsane Lezzet",
+          "isAvailable": true
+        },
+        {
+          "id": "111",
+          "name": "San Pellegrino Limonata (330ml)",
+          "category": "bevande",
+          "price": 65,
+          "description": "Hakiki Sicilya limonlarından yapılmış ferahlatıcı İtalyan gazozu.",
+          "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
+          "badge": "",
+          "isAvailable": true
         }
       ],
-      "payment": "Kapıda Kredi Kartı (POS)",
-      "coupon": "ILK10",
-      "discount": 28,
-      "total": 247,
-      "id": "ORD-6603",
-      "createdAt": "2026-11-19T15:47:35.442Z"
+      "orders": []
+    },
+    "ustapide": {
+      "store": {
+        "id": "ustapide",
+        "name": "Meşhur Usta Pide & Kebap",
+        "slogan": "1994'ten Beri Değişmeyen Lezzet",
+        "phone": "905011550917",
+        "minOrder": 150,
+        "deliveryTime": "30-45 dk",
+        "isOpen": true,
+        "address": "Atatürk Cad. No:42/A, Kadıköy / İstanbul",
+        "instagram": "@meshurustapide",
+        "logo": "https://cdn-icons-png.flaticon.com/512/3075/3075977.png",
+        "coverImage": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1400&q=80",
+        "rating": "4.8",
+        "reviewCount": "320+",
+        "pin": "1234"
+      },
+      "coupons": [
+        { "code": "ILK10", "discountPercent": 10, "minCart": 100 },
+        { "code": "ESNAF15", "discountPercent": 15, "minCart": 200 }
+      ],
+      "categories": [
+        { "id": "pideler", "name": "Pideler" },
+        { "id": "kebaplar", "name": "Kebap & Dürümler" },
+        { "id": "lahmacun", "name": "Lahmacun" },
+        { "id": "icecekler", "name": "İçecekler" },
+        { "id": "tatlilar", "name": "Tatlılar" }
+      ],
+      "products": [
+        {
+          "id": "1",
+          "name": "Kuşbaşılı Kaşarlı Pide",
+          "category": "pideler",
+          "price": 240,
+          "description": "Özel marine edilmiş dana kuşbaşı, taze kaşar peyniri ve tereyağı ile taş fırında.",
+          "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Çok Satan",
+          "isAvailable": true
+        },
+        {
+          "id": "2",
+          "name": "Kıymalı Yumurtalı Pide",
+          "category": "pideler",
+          "price": 210,
+          "description": "Geleneksel kıymalı harç ve köy yumurtası ile enfes lezzet.",
+          "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+          "badge": "👨‍🍳 Taş Fırın",
+          "isAvailable": true
+        },
+        {
+          "id": "3",
+          "name": "Çıtır Lahmacun",
+          "category": "lahmacun",
+          "price": 85,
+          "description": "Taş fırında incecik açılmış çıtır hamur, zırh kıyması, domates ve maydanoz.",
+          "image": "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Çok Satan",
+          "isAvailable": true
+        },
+        {
+          "id": "4",
+          "name": "Adana Dürüm",
+          "category": "kebaplar",
+          "price": 220,
+          "description": "Zırhta çekilmiş acılı kuzu-dana kıyması, közlenmiş biber, sumaklı soğan ve lavaş.",
+          "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+          "badge": "🌶️ Acılı",
+          "isAvailable": true
+        },
+        {
+          "id": "5",
+          "name": "Urfa Dürüm (Acısız)",
+          "category": "kebaplar",
+          "price": 220,
+          "description": "Özel baharatlı zırh kıyması, lavaş, közlenmiş domates ve yeşillik.",
+          "image": "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=600&q=80",
+          "badge": "",
+          "isAvailable": true
+        },
+        {
+          "id": "6",
+          "name": "Fıstıklı Künefe",
+          "category": "tatlilar",
+          "price": 150,
+          "description": "Hatay peynirli, bol şerbetli ve hakiki Antep fıstıklı sıcak künefe.",
+          "image": "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80",
+          "badge": "🔥 Tatlı",
+          "isAvailable": true
+        },
+        {
+          "id": "7",
+          "name": "Kutu Kola (330ml)",
+          "category": "icecekler",
+          "price": 45,
+          "description": "Soğuk servis edilir.",
+          "image": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
+          "badge": "",
+          "isAvailable": true
+        },
+        {
+          "id": "8",
+          "name": "Büyük Boy Yayık Ayran (300ml)",
+          "category": "icecekler",
+          "price": 35,
+          "description": "Bol köpüklü taze yayık ayranı.",
+          "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
+          "badge": "",
+          "isAvailable": true
+        }
+      ],
+      "orders": []
     }
-  ]
+  }
 }
