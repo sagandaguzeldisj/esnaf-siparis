@@ -4,59 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Sipariş Menüsü</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#065f46">
 </head>
 <body>
 
   <div class="app-container">
-    <!-- Üst Başlık & Dükkan Bilgisi -->
-    <header class="store-header">
-      <div class="store-top-bar">
-        <div id="store-status" class="status-badge open">
-          <span class="status-dot"></span>
-          <span id="status-text">Sipariş Alıyor</span>
+    <div class="main-column">
+      <!-- Üst Başlık & Dükkan Bilgisi -->
+      <header class="store-header">
+        <div class="store-top-bar">
+          <div id="store-status" class="status-badge open">
+            <span class="status-dot"></span>
+            <span id="status-text">Sipariş Alıyor</span>
+          </div>
+          <a href="/admin.html" class="admin-link-btn">
+            ⚙️ Esnaf Paneli
+          </a>
         </div>
-        <a href="/admin.html" class="admin-link-btn">
-          ⚙️ Esnaf Paneli
-        </a>
-      </div>
 
-      <div class="store-info" style="display: flex; align-items: center; gap: 14px;">
-        <img id="store-logo" src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Logo" style="width: 52px; height: 52px; border-radius: 12px; background: white; padding: 4px; box-shadow: var(--shadow-sm); object-fit: contain;">
-        <div>
-          <h1 id="store-name">Meşhur Usta Pide & Kebap</h1>
-          <p id="store-slogan">1994'ten Beri Değişmeyen Lezzet</p>
+        <div class="store-info" style="display: flex; align-items: center; gap: 14px;">
+          <img id="store-logo" src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Logo" style="width: 52px; height: 52px; border-radius: 12px; background: white; padding: 4px; box-shadow: var(--shadow-sm); object-fit: contain;">
+          <div>
+            <h1 id="store-name">Meşhur Usta Pide & Kebap</h1>
+            <p id="store-slogan">1994'ten Beri Değişmeyen Lezzet</p>
+          </div>
         </div>
+
+        <div class="store-meta">
+          <span>⏱️ <strong id="delivery-time">30-45 dk</strong></span>
+          <span>🛵 Min: <strong id="min-order">150 TL</strong></span>
+          <span>📍 Kadıköy</span>
+        </div>
+      </header>
+
+      <!-- Arama Çubuğu -->
+      <div class="search-bar-wrap">
+        <input type="text" id="search-input" class="search-input" placeholder="Menüde yemek veya içecek ara...">
       </div>
 
-      <div class="store-meta">
-        <span>⏱️ <strong id="delivery-time">30-45 dk</strong></span>
-        <span>🛵 Min: <strong id="min-order">150 TL</strong></span>
-        <span>📍 Kadıköy</span>
-      </div>
-    </header>
+      <!-- Kategori Çipleri (Yatay Kaydırmalı) -->
+      <nav class="category-tabs" id="category-tabs">
+        <button class="category-chip active" data-category="all">Tümü</button>
+        <!-- Dinamik olarak yüklenecek -->
+      </nav>
 
-    <!-- Arama Çubuğu -->
-    <div class="search-bar-wrap">
-      <input type="text" id="search-input" class="search-input" placeholder="Menüde yemek veya içecek ara...">
+      <!-- Ürün Listesi Bölümü -->
+      <main class="product-section">
+        <div class="product-grid" id="product-list">
+          <!-- Dinamik ürün kartları -->
+        </div>
+      </main>
     </div>
 
-    <!-- Kategori Çipleri (Yatay Kaydırmalı) -->
-    <nav class="category-tabs" id="category-tabs">
-      <button class="category-chip active" data-category="all">Tümü</button>
-      <!-- Dinamik olarak yüklenecek -->
-    </nav>
-
-    <!-- Ürün Listesi Bölümü -->
-    <main class="product-section">
-      <div class="product-grid" id="product-list">
-        <!-- Dinamik ürün kartları -->
-      </div>
-    </main>
-
-    <!-- Altta Sabit Kalan Sepet Barı -->
+    <!-- Altta Sabit Kalan Sepet Barı (Mobil İçin) -->
     <div class="sticky-cart-bar" id="cart-bar" style="display: none;">
       <button class="cart-bar-btn" id="open-cart-btn">
         <div style="display: flex; align-items: center; gap: 8px;">

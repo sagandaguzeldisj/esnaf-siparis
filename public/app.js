@@ -234,6 +234,9 @@ function updateCartUI() {
   } else {
     cartBar.style.display = 'none';
     closeCart();
+    if (drawerSubtotal) drawerSubtotal.textContent = '0 TL';
+    if (discountRow) discountRow.style.display = 'none';
+    if (drawerTotal) drawerTotal.textContent = '0 TL';
   }
 
   // Minimum Paket Uyarısı

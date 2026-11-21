@@ -518,26 +518,15 @@ body {
 /* =========================================================
    🖥️ MASAÜSTÜ & BİLGİSAYAR GÖRÜNÜMÜ (RESPONSIVE DESKTOP)
    Mobildeki (< 768px) kusursuz tasarım aynen kalır.
-   Bilgisayarda ise tam ekran profesyonel web portalına dönüşür.
+   Bilgisayarda ise Yemeksepeti / Getir stili Canlı Sepetli Portala dönüşür.
    ========================================================= */
 @media (min-width: 768px) {
   body {
     background-color: #f1f5f9;
   }
 
-  .app-container {
-    max-width: 1120px;
-    margin: 30px auto;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    min-height: calc(100vh - 60px);
-  }
-
   .store-header {
     padding: 36px 40px 28px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
   }
 
   .store-info h1 {
@@ -581,7 +570,6 @@ body {
     margin-bottom: 18px;
   }
 
-  /* Bilgisayarda ürünleri 2'li modern ızgara (grid) yap */
   .product-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
@@ -614,18 +602,76 @@ body {
     font-size: 13px;
     margin-bottom: 10px;
   }
-
-  .cart-bar-btn {
-    max-width: 650px;
-    font-size: 16px;
-    padding: 16px 24px;
-  }
 }
 
-/* Geniş Bilgisayar Ekranları (1024px ve üzeri) - 3 Kolon */
+/* 💻 BİLGİSAYAR & GENİŞ EKRANLAR (>= 1024px) - YEMEKSEPETİ / GETİR CANLI SEPET DÜZENİ */
 @media (min-width: 1024px) {
+  .app-container {
+    max-width: 1420px !important;
+    margin: 30px auto !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 30px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 24px !important;
+  }
+
+  /* Sol / Ana Menü Kolonu */
+  .main-column {
+    flex: 1 !important;
+    min-width: 0 !important;
+    background: var(--surface) !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid var(--border) !important;
+  }
+
+  /* Ürünler 3 Sütun */
   .product-grid {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 22px;
+    gap: 22px !important;
+  }
+
+  /* Alttaki Mobil Sepet Barını Gizle */
+  .sticky-cart-bar {
+    display: none !important;
+  }
+
+  /* Sağ Taraf: Sabit & Canlı Sepet Paneli (Sticky Desktop Cart) */
+  .cart-modal {
+    position: sticky !important;
+    top: 24px !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    width: 410px !important;
+    min-width: 410px !important;
+    height: auto !important;
+    max-height: calc(100vh - 48px) !important;
+    z-index: 10 !important;
+  }
+
+  .cart-drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid var(--border) !important;
+    background: white !important;
+    max-height: calc(100vh - 48px) !important;
+    animation: none !important;
+  }
+
+  .drawer-content {
+    max-height: calc(100vh - 130px) !important;
+    overflow-y: auto !important;
+  }
+
+  /* Masaüstünde Kapat Butonuna İhtiyaç Yok */
+  .close-btn {
+    display: none !important;
   }
 }
