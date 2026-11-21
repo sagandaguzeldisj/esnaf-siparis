@@ -11,7 +11,7 @@
         "isOpen": true,
         "address": "Moda Cad. No:14/B, Kadıköy / İstanbul",
         "instagram": "@lagabiakadikoy",
-        "logo": "https://cdn-icons-png.flaticon.com/512/3170/3170733.png",
+        "logo": "/logo_square.svg",
         "coverImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
         "rating": "4.9",
         "reviewCount": "480+",
@@ -46,7 +46,7 @@
           "category": "antipasti",
           "price": 240,
           "description": "Mozzarella, domates, fesleğen, balsamik",
-          "image": "https://images.unsplash.com/photo-1592417817098-8f3d6910985c?auto=format&fit=crop&w=600&q=80",
+          "image": "https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=600&q=80",
           "badge": "🌿 Taze",
           "isAvailable": true
         },
