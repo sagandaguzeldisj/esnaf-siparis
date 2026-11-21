@@ -611,7 +611,7 @@ body {
     margin: 30px auto !important;
     display: flex !important;
     flex-direction: row !important;
-    align-items: flex-start !important;
+    align-items: stretch !important; /* İki kolonun uzunluğu BİREBİR EŞİT olur */
     gap: 30px !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -627,6 +627,8 @@ body {
     overflow: hidden !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
     border: 1px solid var(--border) !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   /* Ürünler 3 Sütun */
@@ -640,33 +642,40 @@ body {
     display: none !important;
   }
 
-  /* Sağ Taraf: Sabit & Canlı Sepet Paneli (Sticky Desktop Cart) */
+  /* Sağ Taraf: Soldaki Menüyle Birebir Eşit Uzunlukta Canlı Sepet */
   .cart-modal {
     position: sticky !important;
     top: 24px !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
     background: transparent !important;
     backdrop-filter: none !important;
     width: 410px !important;
     min-width: 410px !important;
-    height: auto !important;
-    max-height: calc(100vh - 48px) !important;
+    height: 100% !important;
+    align-self: stretch !important;
     z-index: 10 !important;
   }
 
   .cart-drawer {
     width: 100% !important;
     max-width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
     border-radius: var(--radius-lg) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
     border: 1px solid var(--border) !important;
     background: white !important;
-    max-height: calc(100vh - 48px) !important;
+    display: flex !important;
+    flex-direction: column !important;
     animation: none !important;
   }
 
   .drawer-content {
-    max-height: calc(100vh - 130px) !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
     overflow-y: auto !important;
   }
 
