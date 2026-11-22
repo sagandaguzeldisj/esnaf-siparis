@@ -460,7 +460,12 @@ _Siparişi onaylıyor musunuz?_`;
   const storePhone = (storeData.store && storeData.store.phone) ? storeData.store.phone.replace(/[^0-9]/g, '') : '905551234567';
   const waUrl = `https://wa.me/${storePhone}?text=${encodeURIComponent(message)}`;
 
-  window.open(waUrl, '_blank');
+  // Mobil (Android / iPhone) ve Masaüstü Tarayıcı Güvenli Yönlendirme
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    window.location.href = waUrl;
+  } else {
+    window.open(waUrl, '_blank');
+  }
 
   cart = [];
   appliedCoupon = null;
