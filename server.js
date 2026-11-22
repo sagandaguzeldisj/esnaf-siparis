@@ -35,6 +35,52 @@ function checkSuperAdminAuth(req, parsedUrl) {
   return false;
 }
 
+// --- GÜVENLİK: BRUTE-FORCE RATE LIMITING (Kaba Kuvvet Koruması) ---
+const pinAttemptMap = new Map(); // ip -> { count, lockedUntil }
+
+function getClientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  if (fwd) return fwd.split(',')[0].trim();
+  return (req.socket && req.socket.remoteAddress) || '127.0.0.1';
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const attempt = pinAttemptMap.get(ip);
+  if (!attempt) return false;
+  if (attempt.lockedUntil && attempt.lockedUntil > now) {
+    return true;
+  }
+  if (attempt.lockedUntil && attempt.lockedUntil <= now) {
+    pinAttemptMap.delete(ip);
+    return false;
+  }
+  return false;
+}
+
+function recordFailedAttempt(ip) {
+  const now = Date.now();
+  const attempt = pinAttemptMap.get(ip) || { count: 0, firstAttempt: now };
+  attempt.count++;
+  if (attempt.count >= 5) {
+    attempt.lockedUntil = now + (15 * 60 * 1000); // 15 dakika kilitle
+  }
+  pinAttemptMap.set(ip, attempt);
+}
+
+function clearRateLimit(ip) {
+  pinAttemptMap.delete(ip);
+}
+
+// --- GÜVENLİK: XSS & PAYLOAD TEMİZLEME (Sanitization) ---
+function sanitizeString(str, maxLen = 200) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/[<>]/g, '') // HTML script taglerini bertaraf et
+    .trim()
+    .slice(0, maxLen);
+}
+
 // Varsayılan Veritabanı
 function loadData() {
   if (!fs.existsSync(DATA_FILE)) {
@@ -86,12 +132,20 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token, X-Super-Admin');
 
+  // Modern Güvenlik Başlıkları (Android, iOS Safari, Masaüstü Tarayıcı Koruması)
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
     return;
   }
 
+  const clientIp = getClientIp(req);
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
   const pathname = parsedUrl.pathname;
   let storeQuery = (parsedUrl.searchParams.get('store') || 'lagabia').toLowerCase().trim();
@@ -99,18 +153,31 @@ const server = http.createServer((req, res) => {
 
   // --- SÜPER PATRON API'LERİ ---
   if (pathname === '/api/super-admin/login' && req.method === 'POST') {
+    if (isRateLimited(clientIp)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: '⚠️ Çok fazla hatalı deneme yapıldı! Güvenlik nedeniyle 15 dakika kilitlendi.' }));
+      return;
+    }
+
     let body = '';
-    req.on('data', c => { body += c; });
+    let size = 0;
+    req.on('data', c => {
+      size += c.length;
+      if (size > 10240) { req.destroy(); }
+      body += c;
+    });
     req.on('end', () => {
       try {
         const { pin } = JSON.parse(body || '{}');
         const validPins = ['1923', 'patron2026', SUPER_ADMIN_KEY];
         if (validPins.includes(String(pin).trim())) {
+          clearRateLimit(clientIp);
           const token = crypto.randomBytes(32).toString('hex');
           activeSessions.set(token, { role: 'superadmin' });
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, token }));
         } else {
+          recordFailedAttempt(clientIp);
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: false, error: 'Hatalı Süper PIN Kodu!' }));
         }
@@ -287,22 +354,35 @@ const server = http.createServer((req, res) => {
 
   // --- PIN DOĞRULAMA (POST /api/verify-pin) ---
   if (pathname === '/api/verify-pin' && req.method === 'POST') {
+    if (isRateLimited(clientIp)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: '⚠️ Çok fazla hatalı deneme yapıldı! Güvenlik nedeniyle 15 dakika kilitlendi.' }));
+      return;
+    }
+
     let body = '';
-    req.on('data', chunk => { body += chunk; });
+    let size = 0;
+    req.on('data', chunk => {
+      size += chunk.length;
+      if (size > 10240) req.destroy();
+      body += chunk;
+    });
     req.on('end', () => {
       try {
-        const { pin, store } = JSON.parse(body);
+        const { pin, store } = JSON.parse(body || '{}');
         const targetStoreId = (store || storeQuery || 'lagabla').toLowerCase().trim();
         const data = loadData();
         const st = data.stores && data.stores[targetStoreId];
         const correctPin = String((st && st.store && st.store.pin) || '1234');
         
         if (String(pin).trim() === correctPin) {
+          clearRateLimit(clientIp);
           const token = crypto.randomBytes(24).toString('hex');
           activeSessions.set(token, targetStoreId);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, token, storeId: targetStoreId }));
         } else {
+          recordFailedAttempt(clientIp);
           res.writeHead(401, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Hatalı PIN kodu' }));
         }
@@ -483,23 +563,53 @@ const server = http.createServer((req, res) => {
   // --- SİPARİŞ KAYDET (POST /api/orders) ---
   if (pathname === '/api/orders' && req.method === 'POST') {
     let body = '';
-    req.on('data', chunk => { body += chunk; });
+    let size = 0;
+    req.on('data', chunk => {
+      size += chunk.length;
+      if (size > 65536) req.destroy(); // 64KB'dan büyük sahte siparişleri engelle
+      body += chunk;
+    });
     req.on('end', () => {
       try {
-        const order = JSON.parse(body);
+        const order = JSON.parse(body || '{}');
         const targetStoreId = (order.store || storeQuery || 'lagabla').toLowerCase().trim();
-        order.id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
-        order.createdAt = new Date().toISOString();
         const data = loadData();
         const st = data.stores && data.stores[targetStoreId];
         if (st) {
+          const cust = order.customer || {};
+          const cleanOrder = {
+            id: 'ORD-' + Math.floor(1000 + Math.random() * 9000),
+            createdAt: new Date().toISOString(),
+            customer: {
+              name: sanitizeString(cust.name, 80) || 'Müşteri',
+              phone: sanitizeString(cust.phone, 30),
+              address: sanitizeString(cust.address, 400),
+              note: sanitizeString(cust.note, 200)
+            },
+            items: Array.isArray(order.items) ? order.items.slice(0, 30).map(it => ({
+              product: {
+                id: sanitizeString(it.product && it.product.id, 20),
+                name: sanitizeString(it.product && it.product.name, 100),
+                price: Number(it.product && it.product.price) || 0
+              },
+              quantity: Math.min(50, Math.max(1, Number(it.quantity) || 1))
+            })) : [],
+            payment: sanitizeString(order.payment, 50),
+            coupon: sanitizeString(order.coupon, 30),
+            discount: Number(order.discount) || 0,
+            total: Number(order.total) || 0
+          };
+
           st.orders = st.orders || [];
-          st.orders.unshift(order);
+          st.orders.unshift(cleanOrder);
           if (st.orders.length > 50) st.orders = st.orders.slice(0, 50);
           saveData(data);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, orderId: cleanOrder.id }));
+        } else {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Restoran bulunamadı' }));
         }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, orderId: order.id }));
       } catch (e) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Geçersiz sipariş verisi' }));
@@ -508,8 +618,44 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // --- STATİK DOSYA SUNUCUSU ---
-  let targetFile = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+  // --- STATİK DOSYA SUNUCUSU & GÜVENLİK FİLTRESİ ---
+  const FORBIDDEN_FILES = [
+    'data.json',
+    'server.js',
+    'package.json',
+    'package-lock.json',
+    'render.yaml',
+    'proje_durumu.md',
+    '.env',
+    '.gitignore'
+  ];
+
+  // Path Traversal saldırılarını önle (../ engelle)
+  const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
+  let targetFile = safePath === '/' ? 'index.html' : safePath.replace(/^\/+/, '');
+  const fileName = path.basename(targetFile).toLowerCase();
+
+  // Hassas dosya veya nokta ile başlayan gizli dosyalara doğrudan erişim yasak
+  if (FORBIDDEN_FILES.includes(fileName) || fileName.startsWith('.')) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('403 - Erişim Yasaklandı');
+    return;
+  }
+
+  // İzin verilen uzantılar kontrolü (Manifest.json hariç json indirilmesi engelli)
+  const ext = path.extname(targetFile).toLowerCase();
+  const ALLOWED_EXTS = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.webp', '.webmanifest'];
+  if (ext === '.json' && fileName !== 'manifest.json') {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('403 - Güvenlik Nedeniyle Erişim Engellendi');
+    return;
+  }
+  if (ext && !ALLOWED_EXTS.includes(ext) && ext !== '.json') {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('403 - Geçersiz Dosya Türü');
+    return;
+  }
+
   let filePath = path.join(PUBLIC_DIR, targetFile);
 
   if (!fs.existsSync(filePath)) {
@@ -536,7 +682,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
   fs.readFile(filePath, (err, content) => {
